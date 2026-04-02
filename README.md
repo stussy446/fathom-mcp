@@ -4,25 +4,26 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 ## Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `fathom_list_meetings` | List meetings with filters (date range, recorder, team, domain) |
-| `fathom_get_meeting_summary` | Get AI-generated summary for a specific recording |
-| `fathom_get_meeting_transcript` | Get full transcript with speaker names and timestamps |
-| `fathom_get_meeting_details` | Get summary + action items + optional transcript in one call |
-| `fathom_list_teams` | List all teams in the Fathom organization |
+| Tool                            | Description                                                     |
+| ------------------------------- | --------------------------------------------------------------- |
+| `fathom_list_meetings`          | List meetings with filters (date range, recorder, team, domain) |
+| `fathom_get_meeting_summary`    | Get AI-generated summary for a specific recording               |
+| `fathom_get_meeting_transcript` | Get full transcript with speaker names and timestamps           |
+| `fathom_get_meeting_details`    | Get summary + action items + optional transcript in one call    |
+| `fathom_list_teams`             | List all teams in the Fathom organization                       |
 
 ## Prerequisites
 
 - Python 3.10+
-- A [Fathom API key](https://fathom.video/settings/api) (requires a Fathom account)
+- A [Fathom API key](https://fathom.video/customize#api-access-header) (requires a Fathom account)
 
 ## Setup
 
 1. **Clone the repo:**
 
    ```bash
-   git clone https://github.com/withflex/fathom-mcp.git
+   # Note: This repo will be moved to the withflex org at a later time
+   git clone https://github.com/stussy446/fathom-mcp.git
    cd fathom-mcp
    ```
 
@@ -33,7 +34,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
    .venv/bin/pip install -e .
    ```
 
-3. **Get your Fathom API key** from [Fathom Settings > API](https://fathom.video/settings/api).
+3. **Get your Fathom API key** from [Fathom Settings > API](https://fathom.video/customize#api-access-header).
 
 ## Adding to Claude Code
 
