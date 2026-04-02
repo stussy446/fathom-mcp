@@ -74,7 +74,7 @@ def _handle_error(e: Exception) -> str:
         try:
             body = e.response.json()
             detail = body.get("message", body.get("detail", ""))
-        except Exception:
+        except ValueError:
             detail = e.response.text[:200]
         return f"Error: Fathom API returned {status}. {detail}"
     if isinstance(e, httpx.TimeoutException):
@@ -402,35 +402,15 @@ async def fathom_get_meeting_details(params: GetMeetingDetailsInput) -> str:
         str: Markdown document with summary, action items, and optional transcript.
     """
     try:
-        # Fetch the meeting from the list endpoint with all includes
-        query = {
-            "include_summary": "true",
-            "include_action_items": "true",
+        # Fetch summary and transcript directly by recording ID
+        summary_data = await _api_request(f"recordings/{params.recording_id}/summary")
+        meeting = {
+            "recording_id": params.recording_id,
+            "default_summary": summary_data.get("summary"),
         }
         if params.include_transcript:
-            query["include_transcript"] = "true"
-
-        data = await _api_request("meetings", params=query)
-        items = data.get("items", [])
-
-        # Find the matching meeting by recording_id
-        meeting = None
-        for m in items:
-            if m.get("recording_id") == params.recording_id:
-                meeting = m
-                break
-
-        # If not in the first page, fetch summary and transcript individually
-        if meeting is None:
-            # Build from individual endpoints
-            summary_data = await _api_request(f"recordings/{params.recording_id}/summary")
-            meeting = {
-                "recording_id": params.recording_id,
-                "default_summary": summary_data.get("summary"),
-            }
-            if params.include_transcript:
-                transcript_data = await _api_request(f"recordings/{params.recording_id}/transcript")
-                meeting["transcript"] = transcript_data.get("transcript")
+            transcript_data = await _api_request(f"recordings/{params.recording_id}/transcript")
+            meeting["transcript"] = transcript_data.get("transcript")
 
         lines = [f"# Meeting Details (Recording {params.recording_id})\n"]
 
