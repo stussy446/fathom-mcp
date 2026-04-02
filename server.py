@@ -7,10 +7,8 @@ Retrieve meeting summaries, transcripts, and action items to feed into
 project management tools like Linear.
 """
 
-import json
 import os
 from typing import Optional, List
-from enum import Enum
 
 import httpx
 from pydantic import BaseModel, Field, ConfigDict
@@ -21,9 +19,18 @@ from mcp.server.fastmcp import FastMCP
 # ---------------------------------------------------------------------------
 
 API_BASE_URL = "https://api.fathom.ai/external/v1"
-API_KEY = os.environ.get("FATHOM_API_KEY", "")
 
 mcp = FastMCP("fathom_mcp")
+
+_http_client: Optional[httpx.AsyncClient] = None
+
+
+async def _get_client() -> httpx.AsyncClient:
+    """Return a shared httpx client, creating one if needed."""
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(timeout=30.0)
+    return _http_client
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -32,7 +39,7 @@ mcp = FastMCP("fathom_mcp")
 
 def _auth_headers() -> dict:
     """Return authentication headers for Fathom API requests."""
-    return {"X-Api-Key": API_KEY}
+    return {"X-Api-Key": os.environ.get("FATHOM_API_KEY", "")}
 
 
 async def _api_request(
@@ -42,16 +49,16 @@ async def _api_request(
     json_body: Optional[dict] = None,
 ) -> dict:
     """Make an authenticated request to the Fathom API."""
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.request(
-            method,
-            f"{API_BASE_URL}/{endpoint.lstrip('/')}",
-            headers=_auth_headers(),
-            params=params,
-            json=json_body,
-        )
-        response.raise_for_status()
-        return response.json()
+    client = await _get_client()
+    response = await client.request(
+        method,
+        f"{API_BASE_URL}/{endpoint.lstrip('/')}",
+        headers=_auth_headers(),
+        params=params,
+        json=json_body,
+    )
+    response.raise_for_status()
+    return response.json()
 
 
 def _handle_error(e: Exception) -> str:
